@@ -58,28 +58,19 @@ let map = [
     ["b","b","b","b","b","b","b"],
     ["b"," "," "," "," "," ","b"],
     ["b"," ","b","#","b"," ","b"],
-    ["b"," ","#","#","#"," ","b"],
+    ["b"," ","#","#","#","#","b"],
     ["b"," ","b","#","b"," ","b"],
     ["b"," "," "," "," "," ","b"],
     ["b","b","b","b","b","b","b"],
 ]
 
-const tile_converter = {
-    "b": Block,
-    "#": Brick,
-}
 
 document.addEventListener("click", () => {
-    const ground = new Ground({x: 0, y:0})
-    ground.show(context)
     const tile_map = createMap(map)
     for (let tile of tile_map) {
         tile.show(context)
     }
 })
-
-
-
 
 function createMap(map) {
     const row = map.length
@@ -88,25 +79,26 @@ function createMap(map) {
 
     for (let i = 0; i < row; i++) {
         for (let j = 0; j < col; j++) {
-            const tile_type = map[i][j]
-            const tile_class = tile_converter[tile_type]
+            const symbol = map[i][j]
+            const tile = symbol_to_tile(symbol)
             const position = {
                 x: j * SCALE_FACTOR, 
                 y: i * SCALE_FACTOR
             }
             
-            if (tile_class) {
-                tiles.push(new tile_class(position)) 
-            } else {
-                tiles.push(new Ground(position)) 
-            }
+            tiles.push(new tile(position))
         }
     }
 
     return tiles
 }
     
+function symbol_to_tile(symbol) {
+    const tiles = {
+        "b": Block,
+        "#": Brick,
+    }
 
-
-
-
+    if (tiles[symbol]) return tiles[symbol]
+    return Ground
+}
