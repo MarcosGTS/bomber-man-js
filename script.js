@@ -54,7 +54,54 @@ class Ground extends Tile {
     }
 }
 
-let map = [
+class Map {
+    constructor(map) {
+        this.map = this.createMap(map)
+    }
+
+    symbol_to_tile(symbol) {
+        const tiles = {
+            "b": Block,
+            "#": Brick,
+        }
+    
+        if (tiles[symbol]) return tiles[symbol]
+        return Ground
+    }
+
+    createMap(map) {
+        const row = map.length
+        const col = map[0].length
+        const tiles = []
+    
+        for (let i = 0; i < row; i++) {
+            const new_row = []
+            for (let j = 0; j < col; j++) {
+                const symbol = map[i][j]
+                const tile = this.symbol_to_tile(symbol)
+                const position = {
+                    x: j * SCALE_FACTOR, 
+                    y: i * SCALE_FACTOR
+                }
+                
+                new_row.push(new tile(position))
+            }
+            tiles.push(new_row)
+        }
+    
+        return tiles
+    }
+    
+    render(context) {
+        for (let row of this.map) {
+            for (let tile of row) {
+                tile.show(context)
+            }
+        }
+    }
+}
+
+let abstract_map = [
     ["b","b","b","b","b","b","b"],
     ["b"," "," "," "," "," ","b"],
     ["b"," ","b","#","b"," ","b"],
@@ -64,41 +111,11 @@ let map = [
     ["b","b","b","b","b","b","b"],
 ]
 
+const map = new Map(abstract_map)
 
-document.addEventListener("click", () => {
-    const tile_map = createMap(map)
-    for (let tile of tile_map) {
-        tile.show(context)
-    }
-})
-
-function createMap(map) {
-    const row = map.length
-    const col = map[0].length
-    const tiles = []
-
-    for (let i = 0; i < row; i++) {
-        for (let j = 0; j < col; j++) {
-            const symbol = map[i][j]
-            const tile = symbol_to_tile(symbol)
-            const position = {
-                x: j * SCALE_FACTOR, 
-                y: i * SCALE_FACTOR
-            }
-            
-            tiles.push(new tile(position))
-        }
-    }
-
-    return tiles
+function gameloop() {
+    map.render(context)
+    requestAnimationFrame(gameloop)
 }
-    
-function symbol_to_tile(symbol) {
-    const tiles = {
-        "b": Block,
-        "#": Brick,
-    }
 
-    if (tiles[symbol]) return tiles[symbol]
-    return Ground
-}
+gameloop()
