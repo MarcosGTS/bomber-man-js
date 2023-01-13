@@ -8,6 +8,7 @@ const BLOCK_SPRITE = {src: TILE_SET, sx: 17, sy: 0, sw: 16, sh: 16, dw: TILE_SIZ
 const BRICK_SPRITE = {src: TILE_SET, sx: 34, sy: 0, sw: 16, sh: 16, dw: TILE_SIZE, dh: TILE_SIZE}
 const GROUND_SPRITE = {src: TILE_SET, sx: 51, sy: 0, sw: 16, sh: 16, dw: TILE_SIZE, dh: TILE_SIZE}
 
+const INPUT = {pressed: false, key: undefined}
 
 const canvas = document.getElementById("canvas")
 const context = canvas.getContext("2d")
@@ -107,7 +108,7 @@ class Map {
 class Player extends Tile {
     constructor(position) {
         super(position, PLAYER_SPRITE)
-        this.velocity = 10
+        this.velocity = 2.5
     }
 
     move(direction) {
@@ -140,19 +141,31 @@ const player = new Player({x: 0, y:0})
 function gameloop() {
     map.render(context)
     player.show(context)
+    if (INPUT.pressed) player.move(INPUT.key)
     requestAnimationFrame(gameloop)
 }
 
 //Input handling
+const directions = {
+    "ArrowUp": "up",
+    "ArrowRight": "right",
+    "ArrowDown": "down",
+    "ArrowLeft": "left",
+}
+
 document.addEventListener("keydown", (e) => {
-    const directions = {
-        "ArrowUp": "up",
-        "ArrowRight": "right",
-        "ArrowDown": "down",
-        "ArrowLeft": "left",
-    }
     const direction = directions[e.key]
-    if (direction) player.move(direction)
+    if (direction) {
+        INPUT.pressed = true
+        INPUT.key = direction
+    }
 })
+
+document.addEventListener("keyup", (e) => {
+    const direction = directions[e.key]
+    if (direction) INPUT.pressed = false
+})
+
+
 
 gameloop()
