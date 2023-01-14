@@ -95,6 +95,28 @@ class Map {
     
         return tiles
     }
+
+    convert_to_index(canvas_position, cell_size) {
+        const x = Math.floor(canvas_position.x / cell_size)
+        const y = Math.floor(canvas_position.y / cell_size)
+        return {x, y}
+    }
+
+    get_newerest_cells(canvas_position) {
+        const cells = []
+        const position = this.convert_to_index(canvas_position, TILE_SIZE)
+
+        for (let x = position.x - 1; x <= position.x + 1; x++) {
+            if (x < 0 || x >= this.map.length) continue
+            for (let y = position.y - 1; y <= position.y + 1; y++) {
+                if (y < 0 || y >= this.map[0].length) continue
+                
+                cells.push(this.map[y][x])
+            }
+        }
+
+        return cells
+    }
     
     render(context) {
         for (let row of this.map) {
@@ -141,6 +163,7 @@ const player = new Player({x: 0, y:0})
 function gameloop() {
     map.render(context)
     player.show(context)
+    map.get_newerest_cells(player.position)
     if (INPUT.pressed) player.move(INPUT.key)
     requestAnimationFrame(gameloop)
 }
