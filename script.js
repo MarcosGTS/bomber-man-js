@@ -20,6 +20,34 @@ canvas.height = 500
 // Bomb
 // Item
 
+class Rect {
+    constructor (position, width, height) {
+        this.position = position
+        this.width = width
+        this.height = height
+    }
+
+    get_vertices() {
+        const vertices = []
+
+        vertices.push({x: this.position.x, y: this.position.y})
+        vertices.push({x: this.position.x + this.width, y: this.position.y})
+        vertices.push({x: this.position.x + this.width, y: this.position.y + this.height})
+        vertices.push({x: this.position.x, y: this.position.y + this.height})
+
+        return vertices
+    }
+
+    show(context) {
+        context.fillRect(
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+        )
+    }
+}
+
 class Tile {
     constructor (position, sprite) {
         this.position = position
