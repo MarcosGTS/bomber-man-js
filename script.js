@@ -198,8 +198,6 @@ class Player extends Tile {
     }
 
     change_direction(direction) {
-        // Take a reference CAUTION
-        const {position, velocity} = this
         const directions = {
             "up":   {x: 0, y: -1},
             "right":{x: 1, y: 0},
@@ -216,6 +214,16 @@ class Player extends Tile {
     move() {
         this.position.x += this.direction.x * this.velocity
         this.position.y += this.direction.y * this.velocity
+    }
+
+    resolve_collision(rect) {
+        if (this.direction.x != 0) {
+            this.rect.resolve_horizontal_collision(rect)
+        }
+
+        if (this.direction.y != 0) {
+            this.rect.resolve_vertical_collision(rect)
+        }
     }
 }
 
@@ -240,10 +248,10 @@ function gameloop() {
     player.move()
 
     const nearest_cells = map.get_newerest_cells(player.position)
-    // for (let cell of nearest_cells) {
-    //     if (cell.constructor.name != "Block") continue
-    //     player.rect.resolve_collision(cell.rect)
-    // }
+    for (let cell of nearest_cells) {
+        if (cell.constructor.name != "Block") continue
+        player.resolve_collision(cell.rect)
+    }
     
     
     requestAnimationFrame(gameloop)
