@@ -38,6 +38,39 @@ class Rect {
         return vertices
     }
 
+    resolve_horizontal_collision(rect) {
+        let vertices = this.get_vertices()
+        
+        for (let i in vertices) {
+            if (rect.get_point_rect_collision(vertices[i]) == false) continue
+            
+            if (i == 0 || i == 3) this.position.x = rect.position.x + rect.width
+            if (i == 1 || i == 2) this.position.x = rect.position.x - this.width
+
+            vertices = this.get_vertices()
+        }
+    }
+
+    resolve_vertical_collision(rect) {
+        let vertices = this.get_vertices()
+        
+        for (let i in vertices) {
+            if (rect.get_point_rect_collision(vertices[i]) == false) continue
+            
+            if (i == 0 || i == 1) this.position.y = rect.position.y + rect.height
+            if (i == 2 || i == 3) this.position.y = rect.position.y - this.height
+
+            vertices = this.get_vertices()
+        }
+    }
+
+    get_point_rect_collision(point) {
+        return (
+            point.x > this.position.x && point.x < this.position.x + this.width
+            && point.y > this.position.y && point.y < this.position.y + this.height
+        )
+    }
+
     show(context) {
         context.fillRect(
             this.position.x,
@@ -71,6 +104,7 @@ class Tile {
 class Block extends Tile {
     constructor (position) {
         super(position, BLOCK_SPRITE)
+        this.rect = new Rect(position, TILE_SIZE, TILE_SIZE)
     }
 }
 
@@ -139,7 +173,7 @@ class Map {
             for (let y = position.y - 1; y <= position.y + 1; y++) {
                 if (y < 0 || y >= this.map[0].length) continue
                 
-                cells.push(this.map[y][x])
+                if (x + y != 0) cells.push(this.map[y][x])
             }
         }
 
@@ -158,20 +192,30 @@ class Map {
 class Player extends Tile {
     constructor(position) {
         super(position, PLAYER_SPRITE)
-        this.velocity = 2.5
+        this.velocity = 1
+        this.direction = {x: 0, y: 0}
+        this.rect = new Rect(position, TILE_SIZE/2, TILE_SIZE/2)
     }
 
-    move(direction) {
+    change_direction(direction) {
         // Take a reference CAUTION
         const {position, velocity} = this
         const directions = {
-            "up":   function() {position.y -= velocity},
-            "right":function() {position.x += velocity},
-            "down": function() {position.y += velocity},
-            "left": function() {position.x -= velocity},
+            "up":   {x: 0, y: -1},
+            "right":{x: 1, y: 0},
+            "down": {x: 0, y: 1},
+            "left": {x: -1, y: 0},
+            "none": {x: 0, y: 0},
         }
 
-        if (directions[direction]) directions[direction]()
+        if (directions[direction]) {
+            this.direction = directions[direction]
+        }
+    }
+
+    move() {
+        this.position.x += this.direction.x * this.velocity
+        this.position.y += this.direction.y * this.velocity
     }
 }
 
@@ -186,13 +230,22 @@ let abstract_map = [
 ]
 
 const map = new Map(abstract_map)
-const player = new Player({x: 0, y:0})
+const player = new Player({x: TILE_SIZE, y: TILE_SIZE})
 
 function gameloop() {
     map.render(context)
     player.show(context)
-    map.get_newerest_cells(player.position)
-    if (INPUT.pressed) player.move(INPUT.key)
+
+    player.change_direction(INPUT.key)
+    player.move()
+
+    const nearest_cells = map.get_newerest_cells(player.position)
+    // for (let cell of nearest_cells) {
+    //     if (cell.constructor.name != "Block") continue
+    //     player.rect.resolve_collision(cell.rect)
+    // }
+    
+    
     requestAnimationFrame(gameloop)
 }
 
@@ -207,14 +260,15 @@ const directions = {
 document.addEventListener("keydown", (e) => {
     const direction = directions[e.key]
     if (direction) {
-        INPUT.pressed = true
         INPUT.key = direction
     }
 })
 
 document.addEventListener("keyup", (e) => {
     const direction = directions[e.key]
-    if (direction) INPUT.pressed = false
+    if (direction) {
+        INPUT.key = "none"
+    }
 })
 
 
